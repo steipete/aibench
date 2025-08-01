@@ -8,9 +8,9 @@ A Go CLI tool for benchmarking OpenAI-compatible API servers. Automatically disc
 
 | Provider | Model | Tokens/sec | Success Rate | Avg Latency | Notes |
 |----------|-------|------------|--------------|-------------|-------|
-| **Cerebras** | qwen-3-coder-480b | **91.93** ⚡ | 26.8% | 996ms | Highest throughput but rate limited |
-| **Alibaba Cloud** | qwen3-coder-plus | **38.83** 🛡️ | 88.9% | 3.5s | Best reliability |
-| **Custom Server** | qwen3-coder | **33.88** 📈 | 87.5% | 4.2s | Most consistent |
+| **Cerebras** | qwen-3-coder-480b | **91.93** | 26.8% | 996ms | Highest throughput but rate limited |
+| **Alibaba Cloud** | qwen3-coder-plus | **38.83** | 88.9% | 3.5s | Best reliability |
+| **Custom Server** | qwen3-coder | **33.88** | 87.5% | 4.2s | Most consistent |
 
 **Winner:** Cerebras for raw speed, Alibaba Cloud for production reliability
 
@@ -23,16 +23,16 @@ A Go CLI tool for benchmarking OpenAI-compatible API servers. Automatically disc
 
 ## Features
 
-- 🚀 **Auto-discovery**: Automatically discovers available models via `/v1/models` endpoint
-- 📊 **Comprehensive metrics**: RPS, tokens/sec, latency percentiles, TTFT, error rates
-- ⚡ **Concurrent testing**: Auto-detects optimal concurrency or use custom values  
-- 🎯 **Multiple prompt sizes**: Test with small, medium, large, or mixed prompts
-- 📈 **Real-time progress**: Live progress bar with dynamic tokens/sec and smart status updates
-- 🌊 **Streaming support**: Test both regular and streaming completions
-- 🎨 **Rich output**: Colored terminal output and JSON export options
-- 🔄 **Warmup phase**: Optional warmup to stabilize server performance
-- 🔐 **API Key support**: Built-in authentication for cloud providers
-- 🌐 **Smart URL handling**: Automatic HTTPS for domains, HTTP for local IPs
+- **Auto-discovery**: Automatically discovers available models via `/v1/models` endpoint
+- **Comprehensive metrics**: RPS, tokens/sec, latency percentiles, TTFT, error rates
+- **Concurrent testing**: Auto-detects optimal concurrency or use custom values  
+- **Multiple prompt sizes**: Test with small, medium, large, or mixed prompts
+- **Real-time progress**: Live progress bar with dynamic tokens/sec and smart status updates
+- **Streaming support**: Test both regular and streaming completions
+- **Rich output**: Colored terminal output and JSON export options
+- **Warmup phase**: Optional warmup to stabilize server performance
+- **API Key support**: Built-in authentication for cloud providers
+- **Smart URL handling**: Automatic HTTPS for domains, HTTP for local IPs
 
 ## Installation
 
@@ -121,7 +121,7 @@ go install
 The benchmark shows **live performance metrics** while running:
 
 ```
-⏳ [████████████████████] 67.3% | RPS: 45.2 | TPS: 1.2k | Reqs: 1356/1400 | ETA: 9s
+[████████████████████] 67.3% | RPS: 45.2 | TPS: 1.2k | Reqs: 1356/1400 | ETA: 9s
 ```
 
 ### Display Features:
@@ -153,20 +153,20 @@ The benchmark shows **live performance metrics** while running:
 ## Example Output
 
 ```
-🚀 aibench - OpenAI API Benchmarking Tool
+aibench - OpenAI API Benchmarking Tool
 Server: localhost:8000
 Models: gpt-4, gpt-3.5-turbo
 ────────────────────────────────────────────────────────────
 
-📊 Benchmarking model: gpt-4
-ℹ Finding optimal concurrency...
-ℹ Optimal concurrency: 8
-ℹ Warming up (5s)...
-ℹ Running benchmark (concurrency: 8, duration: 30s)...
+Benchmarking model: gpt-4
+Finding optimal concurrency...
+Optimal concurrency: 8
+Warming up (5s)...
+Running benchmark (concurrency: 8, duration: 30s)...
 
-⏳ [████████████████████] 100.0% | RPS: 45.2 | TPS: 1.2k | Reqs: 1356/1356 | ETA: 0s
+[████████████████████] 100.0% | RPS: 45.2 | TPS: 1.2k | Reqs: 1356/1356 | ETA: 0s
 
-📈 Benchmark Results
+Benchmark Results
 
 Model: gpt-4
 ──────────────────────────────────────────────────
@@ -217,16 +217,16 @@ This tool works with any OpenAI-compatible API server including:
 **Smart Behavior**: When you specify models with `--models`, discovery is automatically skipped. This eliminates the need for a separate flag and handles provider limitations seamlessly.
 
 ```bash
-# ❌ This may fail if discovery is broken
+# This may fail if discovery is broken
 ./aibench --api-key "key" provider.com
 
-# ✅ This automatically skips discovery (recommended)
+# This automatically skips discovery (recommended)
 ./aibench --api-key "key" --models qwen3-coder-plus provider.com
 
-# ✅ Multiple models also skip discovery
+# Multiple models also skip discovery
 ./aibench --api-key "key" --models model1,model2,model3 provider.com
 
-# ✅ Only uses discovery when no models specified
+# Only uses discovery when no models specified
 ./aibench --api-key "key" provider.com  # Will discover all available models
 ```
 
