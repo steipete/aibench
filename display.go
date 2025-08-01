@@ -63,10 +63,10 @@ func (d *Display) ShowProgress(ctx context.Context, metrics *Metrics, duration t
 	ticker := time.NewTicker(1 * time.Second)
 	defer ticker.Stop()
 	
-	progressCtx, cancelProgress := context.WithCancel(context.Background())
-	defer cancelProgress()
+	progressDone := make(chan struct{})
 	
 	go func() {
+		defer close(progressDone)
 		for {
 			select {
 			case <-ticker.C:
@@ -77,22 +77,18 @@ func (d *Display) ShowProgress(ctx context.Context, metrics *Metrics, duration t
 					if p.Current < p.Total {
 						p.Add(p.Total - p.Current) // Set to 100%
 					}
-					p.Stop()
-					return
+					continue // Keep updating the title even after 100%
 				}
 				
 				// Get current stats
 				_, tps, successful, total, _ := liveMetrics.GetLiveStats()
 				
-				// Show different info based on whether we have meaningful data yet
-				var title string  
-				if successful == 0 {
-					title = fmt.Sprintf("Running benchmark... (Reqs: %d | Waiting for first response...)", total)
-				} else if elapsed.Seconds() < 2 {
-					title = fmt.Sprintf("Running benchmark... (Reqs: %d/%d | Warming up...)", successful, total)
+				// Simple title showing requests and tokens/sec
+				var title string
+				if successful > 0 && tps > 0 {
+					title = fmt.Sprintf("Running benchmark... (Reqs: %d | %.2f Tokens/sec)", total, tps)
 				} else {
-					// Prioritize tokens/sec since it's more useful for LLM benchmarking
-					title = fmt.Sprintf("Running benchmark... (%.2f Tokens/sec)", tps)
+					title = fmt.Sprintf("Running benchmark... (Reqs: %d)", total)
 				}
 				
 				p.UpdateTitle(title)
@@ -100,21 +96,27 @@ func (d *Display) ShowProgress(ctx context.Context, metrics *Metrics, duration t
 					p.Add(1)
 				}
 				
-			case <-progressCtx.Done():
-				return
 			case <-ctx.Done():
-				cancelProgress()
+				// Set to 100% when context is done
 				if p.Current < p.Total {
-					p.Add(p.Total - p.Current) // Set to 100%
+					p.Add(p.Total - p.Current)
 				}
-				p.Stop()
 				return
 			}
 		}
 	}()
 	
+	// Wait for context to be done
 	<-ctx.Done()
-	cancelProgress()
+	
+	// Wait for the progress goroutine to finish
+	<-progressDone
+	
+	// Keep the completed progress bar visible for a moment
+	time.Sleep(1 * time.Second)
+	
+	// Now stop the progress bar
+	p.Stop()
 }
 
 // PrintResults displays the final benchmark results

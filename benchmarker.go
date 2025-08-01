@@ -231,11 +231,14 @@ func (b *Benchmarker) runMainBenchmark(ctx context.Context, model string, concur
 	b.display.PrintStatus(fmt.Sprintf("Running benchmark (concurrency: %d, duration: %v)...", 
 		concurrency, b.config.Duration))
 	
-	// Start progress display
+	// Start progress display in a separate goroutine
 	progressCtx, progressCancel := context.WithCancel(ctx)
-	defer progressCancel()
+	progressDone := make(chan struct{})
 	
-	go b.display.ShowProgress(progressCtx, b.metrics, b.config.Duration)
+	go func() {
+		b.display.ShowProgress(progressCtx, b.metrics, b.config.Duration)
+		close(progressDone)
+	}()
 	
 	// Run benchmark workers
 	benchCtx, benchCancel := context.WithTimeout(ctx, b.config.Duration)
@@ -252,8 +255,11 @@ func (b *Benchmarker) runMainBenchmark(ctx context.Context, model string, concur
 	
 	wg.Wait()
 	
-	// Stop progress display and get final stats
+	// Cancel progress context and wait for it to finish
 	progressCancel()
+	<-progressDone
+	
+	// Get final stats
 	stats := b.metrics.GetStats()
 	
 	return BenchmarkResult{
